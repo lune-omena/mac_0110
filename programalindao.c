@@ -35,8 +35,16 @@ int main(){
 	ok = 0;			// variavel auxiliar para identificar a jogada do usuario como valida
 
 printf("\n*** Bem-vindo ao Jogo do SOS! ***");
-printf("\n\nDigite 1 se voce deseja comecar, ou 2 caso contrario:");
-scanf("%d", &jogador);
+while (ok == 0){
+	printf("\n\nDigite 1 se voce deseja comecar, ou 2 caso contrario:");
+	scanf("%d", &jogador);
+	if (jogador < 1 || jogador > 2){
+		printf("\nNumero invalido!. Escolha novamente.");
+	} else {
+		ok = 1;
+	}
+}
+ok = 0;
 
 printf("\nConfiguracao inicial:\n");
 tabuleiro(config);
@@ -44,7 +52,7 @@ printf("\n\nO tabuleiro tem %d SOS(s)\nPlacar: Usuario %d x %d Computador", sos,
 
 // O ciclo do jogo se inicia
 while (espacos_livres != 0) {
-	if (jogador % 2){ //jogador é o usuário caso o resto seja 1
+	if (jogador % 2 == 1){ //jogador é o usuário caso o resto seja 1
 		while(ok == 0){
 			// Captando a jogada do usuario		
 			printf("\n\nDigite sua jogada:\nDigite 1 para S, 2 para O: ");
@@ -67,6 +75,7 @@ while (espacos_livres != 0) {
 			} else {
 				if (retorna_numero(config, linha, coluna) != 0){
 					printf("\n\nEssa posicao ja esta ocupada! Refaca sua jogada.\n posicao: %d\n", retorna_numero(config,linha,coluna));
+					tabuleiro(config);
 			} else {
 				ok = 1;
 			}	
@@ -74,57 +83,61 @@ while (espacos_livres != 0) {
 			}
 			}
 		}
-		
+		ok = 0;
 		} else {
-			// inserção de valor pelo pc		
+			// inserção de valor pelo pc
+			//jogada_comp = 0;		
 			for(i = 1; i<=3;i++){
-				for(j = 3; j > 0;j--){
-					if (retorna_numero(config, i, j) == 0 && jogada_comp == 0){
+				for(j = 1; j <= 3 && ok == 0;j++){
+					//printf("\nRetorna num: %d\n linha: %d coluna: %d\n\n", retorna_numero(config, i, j), i, j);
+					if (retorna_numero(config, i, j) == 0 && ok == 0){
 						linha = i;
+						//printf("\nRETORNA NUM: %d\nlinha: %d coluna: %d\n\n", retorna_numero(config, i, j), i, j);
 						coluna = j;
 						jogada = ((3*(linha-1)+(coluna-1)) % 2) + 1;
-						jogada_comp = 1;
+						ok = 1;
 					}
 				}
 			}
+		ok = 0;
 		printf("\nTabuleiro apos minha jogada:\n");	
 		}
 	// Calculando o novo valor de configuracao do tabuleiro
 	config = config + jogada*potencia(3, 3*(linha-1)+(coluna-1)); 
+	printf("\nNumero da config do tabuleiro: %d\n", config);
 	
 	// Comparando o registro de sos, para verificar se algum ponto foi feito
 	dif = calcula_sos(config) - sos;
+	printf("\nFuncao calcula SOS: %d\nDif: %d\n", calcula_sos(config), dif);
 	if (dif != 0){ 		// pontuando
-		if (jogador % 2) {
+		if (jogador % 2 == 1) {
 			score_usu = score_usu + dif;
 			printf("Voce marcou %d pontos. Jogue novamente.\n", dif);
 			jogador++; //adiciona +1 para continuar com o mesmo jogador
-			ok = 0;
 		} else {
 			score_comp = score_comp + dif;
 			printf("Marquei %d pontos. Vou jogar novamente.\n", dif);
 			jogador++;
-			jogada_comp = 0;
 		}
 	}
 	tabuleiro(config);	// Mostra o tabuleiro na nova configuracao
 	sos = dif + sos;	// Atualiza o valor total de sos no tabuleiro
 	printf("\n\nO tabuleiro tem %d SOS(s)\nPlacar: Usuario %d x %d Computador", sos, score_usu, score_comp);
-	if (espacos_livres == 0){
-		if (score_usu == score_comp){
-			printf("\n\nEmpatamos!");
-		} else {
-			if(score_usu > score_comp){
-				printf("\n\nVocê ganhou!");
-			} else {
-				printf("\n\nEu ganhei!");
-			}
-		}
-	}
+	
 	espacos_livres--;
 	jogador++;
-	ok = 0;
 }
+
+	if (score_usu == score_comp){
+		printf("\n\nEmpatamos!");
+	} else {
+		if(score_usu > score_comp){
+			printf("\n\nVocê ganhou!");
+		} else {
+			printf("\n\nEu ganhei!");
+		}
+	}
+	
 
 return 0;
 }
@@ -140,11 +153,15 @@ int potencia(int base, int potencia){
 
 int retorna_numero(int codificacao, int linha, int coluna){
 	// Funcao para retornar o numero na posicao, dado a linha e coluna
-	int i, j,aux_cod;
-	for (i = 0; i<linha; i++){
-		for (j = 0; j<coluna; j++){
+	int i, j, aux_cod, cont;
+	aux_cod = 0;
+	cont = 3*(linha-1)+coluna; // variavel para fazer a funcao percorrer ate a posicao desejada. Vai de 1 a 9
+	for (i = 0; i<3 && cont!= 0; i++){
+		for (j = 0; j<3 & cont!=0; j++){
 		aux_cod = codificacao % 3;
+		printf("\naux: %d config: %d linha: %d coluna: %d", aux_cod, codificacao, i, j);
 		codificacao = codificacao/3;
+		cont--;
 		}
 	}
 	return (aux_cod);
@@ -174,8 +191,7 @@ int tabuleiro(int codificacao){
 	printf("\n");
 	if (i != 2) { printf("-----+-----+-----\n");}
 	}
-	sos = 0;
-	return (sos);
+	return (0);
 }
 
 int calcula_sos(int config){
@@ -183,7 +199,7 @@ int calcula_sos(int config){
 	int sos, i, j, aux;
 	sos = 0;
 	
-	for (i = 1; i<3;i++){
+	for (i = 1; i<=3;i++){
 	// Verificando as colunas
 		if ((retorna_numero(config, 1, i)==1 && retorna_numero(config, 2, i)==2 && retorna_numero(config, 3, i)==1)){
 		printf("linha - i: %d - %d - %d - %d\n", i, retorna_numero(config, 1, i),retorna_numero(config, 2, i),retorna_numero(config, 3, i) );
