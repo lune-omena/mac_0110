@@ -24,26 +24,29 @@ int carta (double x);
 int main(){
 	double x, perc;	
 	int lim, partidas, par, score_usu, mao_usu, mao_mesa, ok, i;
+//	int cartas[10];
 	ok = 1;
+	
+//	for (lim = 0; lim < 10; lim++){
+//		cartas[lim] = 0;
+//	}
 	
 	while (ok){
 		printf("Digite a semente (0 < x < 1): ");
 		scanf("%lf", &x);
 		
 		if (x>=1 || x<=0)
-			printf("\n\t Semente invalida!\n\tTente novamente.\n\n");
+			prinft("\n\t Semente invalida!\n\tTente novamente.\n\n");
 		else
 			ok = 0;
 	}
 	
-	while(!ok){
+	while(ok == 0){
 		printf("\nDigite o numero de simulacoes para cada limiar: ");
 		scanf("%d", &partidas);
 		
 		if(partidas < 0)
 			printf("\n\t Numero invalido!\n\tTente novamente.\n\n");
-		else
-			ok = 1;
 	}
 
 
@@ -53,12 +56,14 @@ int main(){
 			// Jogada do usuario/jogador
 			while (mao_usu < lim){
 				mao_usu+= carta(x);
+//				cartas[carta(x)-1]++;
 				x = pseudorand(x);
 			}
 			
 			// Jogada da canca
 			while (mao_mesa <= mao_usu){
 				mao_mesa += carta(x);
+//				cartas[carta(x)-1]++;
 				x = pseudorand(x);
 			}
 			
@@ -82,6 +87,10 @@ int main(){
 		mao_usu = 0;
 		mao_mesa = 0;
 	}
+	
+//	for(lim = 0; lim < 13; lim++){
+//		printf("\nCarta %2d foi jogada %d vezes.", lim+1, cartas[lim]);
+//	}
 	
 return (0);
 }
