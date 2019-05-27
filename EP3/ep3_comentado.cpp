@@ -2,33 +2,42 @@
     Nome: Lucy Anne de Omena Evangelista
     NUSP: 11221776
 
-    Fonte e comentários:
+    Fonte e comentários: 
+    O programa utiliza uma matriz para armazenar os valores do arquivo, fazendo um tratamento nos dados recebidos do arquivo
+    de tal forma que fique mais fácil processá-los. O tempo padrão é em minutos, sendo convertido em horas quando necessário.
+    Cada uma das funcoes foram pensadas para funcionar com qualquer matriz de três colunas, com a pessoa indicando qual coluna
+    deseja levar em consideração para cada processo. As funções estão descritas possuem nome auto-descritivo. A função ordena()
+    retorna um vetor de correção da ordem dos itens, não modificando a estrutura inicial dos dados e facilitando na manipulação
+    da matriz.
+    A funcao distribuicao_por_tempo_diario() mostra as estatísticas considerando a quantidade de pessoas ao final do período.
     
 ****************************************************************/
-
 #include <stdio.h>
 #include <math.h>
+#define MAX 100
+#define cols_data 3
 
-int nusp_unicos(int [3][100], int tamn);
-float tempo_medio(int dados[3][100], int tamn, int col);
-float desvio_padrao(int dados[3][100], int tamn, int col);
-void histograma_de_uso(int dados[3][100], int tamn);
-void ordena(int dados[3][100], int tamn, int col, int ordena[], int ascdesc);
+int nusp_unicos(int nusp[cols_data][MAX], int tamn, int unicos[MAX], int col);
+float tempo_medio(int dados[cols_data][MAX], int tamn, int col);
+float desvio_padrao(int dados[cols_data][MAX], int tamn, int col);
+void histograma_de_uso(int dados[cols_data][MAX], int tamn);
+void distribuicao_por_tempo_diario(int dados[3][MAX], int tamn, int unicos[MAX], int tamun);
+void ordena(int dados[cols_data][MAX], int tamn, int col, int ordena[], int ascdesc);
 
 int main(){
 	int achou, achouvalor = 0;
 	int i, j, k = 0, tempo, hrs, min;
-	int registro[3][100], aux[100], tamn = 0;
-	int sis[3][100];
-	char nome_arquivo[50];
+	int registro[cols_data][MAX], aux[MAX], tamn = 0;
+	int sis[cols_data][MAX], unicos[MAX], tamun = 0;
+	char nome_arquivo[80];
 	FILE * arquivo;
 
 	// Inicializando matrizes e vetores
-	for (j =0; j<100; j++){
+	for (j =0; j < MAX; j++){
 		aux[j] = 0;
-		registro[0][j] = 0;
-		registro[1][j] = 0;
-		registro[2][j] = 0;
+		unicos[i] = 0;
+		for (i = 0; i < cols_data; i++)
+			registro[i][j] = 0;
 	}
 
 	// Iniciando o programa
@@ -39,6 +48,7 @@ int main(){
 	arquivo = fopen("arq20190425.txt", "r");
 
 	// Armazenando os dados do arquivo de dados, numa estrutura de sequencia [nusp, entrada/saida, tempo(min)]
+	// Essa parte do programa precisa ser ajustada caso a estrutura do arquivo seja mudada
 	while (!feof(arquivo)){		
 		if (fscanf(arquivo,"%d %d %d:%d", &sis[1][tamn], &sis[0][tamn], &hrs , &min) != 4){
 			continue;
@@ -50,7 +60,7 @@ int main(){
 		tamn++;
 	}
 	
-	// tratando a tabela sis para possuir os dados na estrutura [nusp, tempo de entrada(min), permanencia]
+	// Iniciando o DataPrep. Tratando a tabela sis para possuir os dados na estrutura [nusp, tempo de entrada(min), permanencia]
 	for (i = 0; i < tamn; i++){
 		achou = 0;
 		for (j = i + 1; j < tamn; j++){
@@ -87,46 +97,59 @@ int main(){
 			}
 		}	
 	}
+	// Fim do DataPrep
 	// Agora a variável k representa a quantidade de visitas diárias à biblioteca!
 	
 	
 	// Calculando status
-	printf("\n\nNO PERIODO TIVEMOS %3d USUARIOS DIFERENTES E %3d VISITAS", nusp_unicos(registro, k), k);
+	tamun = nusp_unicos(registro, k, unicos, 0);
+	printf("\n\nNO PERIODO TIVEMOS %3d USUARIOS DIFERENTES E %3d VISITAS", tamun, k);
 	printf("\nA MEDIA DE PERMANENCIA NO SALAO FOI DE %5.2f MINUTOS", tempo_medio(registro, k, 2));
 	printf("\nO DESVIO PADRAO DA PERMANENCIA E DE %5.2f MINUTOS", desvio_padrao(registro, k, 2));
 	
 	printf("\n\nLISTA DE USUARIOS DO SALAO DE LEITURA\n");
     printf("\nNUSP\tHora de entrada\tTempo de permanencia (minutos)");
     
-    ordena(registro, k, 0, aux, 0);
+    //ordenando a tabela pelo NUSP. Coloca em aux os indices de correção das variáveis ordenadas
+    ordena(registro, k, 0, aux, 0);  
     for (i = 0; i < k; i++)
-   		printf("\n%d \t    %d:%02d \t  %4d", registro[0][i], (registro[1][aux[i]] / 60), (registro[1][aux[i]] % 60), registro[2][aux[i]]);
+   		printf("\n%d \t    %d:%02d \t  %4d", registro[0][aux[i]], (registro[1][aux[i]] / 60), (registro[1][aux[i]] % 60), registro[2][aux[i]]);
    		
     printf("\n\nVISITAS ORDENADAS PELO TEMPO DE PERMANENCIA\n");
 	printf("\nNUSP\tHora de entrada\tTempo de permanencia (minutos)");
 	
+	//ordenando a tabela pelo tempo de permanencia
 	ordena(registro, k, 2, aux, 1);
     for (i = 0; i < k; i++)
-   		printf("\n%d \t    %d:%02d \t  %4d", registro[0][aux[i]], (registro[1][aux[i]] / 60), (registro[1][aux[i]] % 60), registro[2][i]);
+   		printf("\n%d \t    %d:%02d \t  %4d", registro[0][aux[i]], (registro[1][aux[i]] / 60), (registro[1][aux[i]] % 60), registro[2][aux[i]]);
 	
+	printf("\n\nVISITAS ORDENADAS PELO HORARIO DE ENTRADA\n");
+	printf("\nNUSP\tHora de entrada\tTempo de permanencia (minutos)");
+	
+	//ordenando a tabela pelo horário de entrada
+	ordena(registro, k, 1, aux, 0);
+    for (i = 0; i < k; i++)
+   		printf("\n%d \t    %d:%02d \t  %4d", registro[0][aux[i]], (registro[1][aux[i]] / 60), (registro[1][aux[i]] % 60), registro[2][aux[i]]);
+	
+	//Exibindo informações de uso
 	histograma_de_uso(registro, k);
+	distribuicao_por_tempo_diario(registro, k, unicos, tamun);
 }
 
 
 
-int nusp_unicos(int nusp[3][100], int tamn){
+int nusp_unicos(int nusp[3][MAX], int tamn, int unicos[MAX], int col){
 	int possui = 0, i, j, tamun = 0;
-	int unicos[tamn];
 
 	for (i = 0; i < tamn; i++){
 		for (j = 0; j < tamn; j++){
-			if (nusp[0][i] == unicos[j])
+			if (nusp[col][i] == unicos[j])
 				possui++;
 		}
 
 		if (possui == 0){
 		//	printf("\nnusp: %d tam: %d", nusp[0][i], tamun);
-			unicos[tamun] = nusp[0][i];
+			unicos[tamun] = nusp[col][i];
 			tamun++;
 		}
 		possui = 0;
@@ -135,7 +158,7 @@ int nusp_unicos(int nusp[3][100], int tamn){
 
 }
 
-float tempo_medio(int dados[3][100], int tamn, int col){
+float tempo_medio(int dados[3][MAX], int tamn, int col){
 	int i, soma = 0;
 
 	for (i = 0; i < tamn; i++)
@@ -144,7 +167,7 @@ float tempo_medio(int dados[3][100], int tamn, int col){
 	return((float) soma / tamn);
 }
 
-float desvio_padrao(int dados[3][100], int tamn, int col){
+float desvio_padrao(int dados[3][MAX], int tamn, int col){
 	int i;
 	float desvio, media, soma = 0;
 	media = tempo_medio(dados, tamn, col);
@@ -158,7 +181,7 @@ float desvio_padrao(int dados[3][100], int tamn, int col){
 	return (desvio);
 }
 
-void histograma_de_uso(int dados[3][100], int tamn){
+void histograma_de_uso(int dados[3][MAX], int tamn){
 	int i, j, nusp = 0, hora[24], inicio, fim;
 	
 	//zerando a matriz de horas
@@ -189,8 +212,41 @@ void histograma_de_uso(int dados[3][100], int tamn){
 	}
 }
 
-void ordena(int dados[3][100], int tamn, int col, int ordena[], int ascdesc){
-    int i, j, aux = 0, vaux[tamn], dado[100];
+
+
+void distribuicao_por_tempo_diario(int dados[3][MAX], int tamn, int unicos[MAX], int tamun){
+	int i, j, permanencia[tamun], distribuicao[48], fim;
+
+	for (i = 0; i < tamun; i++)
+		permanencia[i] = 0;
+		
+	for (i = 0; i < 48; i++)
+		distribuicao[i] = 0;
+		
+	for (i = 0; i < tamun; i++)
+		for(j = 0; j < tamn; j++)
+			if(unicos[i] == dados[0][j])
+				permanencia[i] += dados[2][j];
+		
+	for (i = 0; i < tamun; i++){
+		fim = permanencia[i]/ 30;
+		for(j = 0; j < fim; j++)
+			distribuicao[j] += 1;	
+	}
+	
+	printf("\n\nDISTRIBUICAO DE USUARIOS POR TEMPO DE USO DIARIO (min)\n");
+	printf("\n    PERIODO");
+	for (i = 0; i < 48; i++){
+		printf("\n %02d:%02d - %02d:%02d | ", ((i * 30) / 60), ((i * 30) % 60) + 1, (((i+1) * 30) / 60) % 24, (((i+1) * 30) % 60) + 1);
+		
+		for(j = 0; j < distribuicao[i]; j++){
+			printf("*");
+		}
+	}
+}
+
+void ordena(int dados[3][MAX], int tamn, int col, int ordena[], int ascdesc){
+    int i, j, aux = 0, vaux[tamn], dado[MAX];
 
     // atribuindo valores para o vetor auxiliar e ordena[]
     for(i = 0; i < tamn; i++){
